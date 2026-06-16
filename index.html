@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Laporan Marketing & Sales</title>
+    <!-- Tailwind CSS untuk Desain Modern & Responsif -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen py-8 px-4">
+
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-blue-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold uppercase tracking-wide">📊 Input Laporan Marketing & Sales</h1>
+            <p class="text-blue-100 text-sm mt-1">Target Terisi Otomatis • Hitung Acv Otomatis</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+            <!-- Form Input (Kiri) -->
+            <div class="space-y-6">
+                <!-- Data Hubungan/Meta -->
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 grid grid-cols-2 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase">Tanggal</label>
+                        <input type="date" id="tanggal" class="w-full mt-1 p-2 border rounded bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase">Shift</label>
+                        <input type="text" id="shift" placeholder="Contoh: 3" class="w-full mt-1 p-2 border rounded bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase">Staf</label>
+                        <input type="text" id="staf" placeholder="Nama Staf" class="w-full mt-1 p-2 border rounded bg-white">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase">Crew</label>
+                        <input type="text" id="crew" placeholder="Nama Crew" class="w-full mt-1 p-2 border rounded bg-white">
+                    </div>
+                </div>
+
+                <!-- Tabel Input Data -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 text-xs uppercase">
+                                <th class="p-2 rounded-l">Indikator / Item</th>
+                                <th class="p-2 w-28">Target</th>
+                                <th class="p-2 w-28 rounded-r">Actual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="metric-fields" class="text-sm divider-y divider-gray-100">
+                            <!-- Diisi oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Output Hasil & Preview (Kanan) -->
+            <div class="flex flex-col h-full justify-between bg-gray-50 p-5 rounded-xl border border-gray-200">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        📝 Preview Teks Laporan
+                    </h3>
+                    <textarea id="output-text" readonly class="w-full h-[450px] p-3 bg-gray-900 text-green-400 font-mono text-xs rounded-lg border border-gray-300 resize-none focus:outline-none focus:ring-0" placeholder="Hasil laporan akan muncul di sini secara otomatis..."></textarea>
+                </div>
+                
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <button onclick="resetActual Only()" class="px-4 py-3 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition cursor-pointer text-center text-sm">
+                        🔄 Kosongkan Actual
+                    </button>
+                    <button onclick="copyToClipboard()" id="btn-copy" class="px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition cursor-pointer text-center text-sm flex items-center justify-center gap-2">
+                        📋 Salin Teks
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Struktur data dengan default value sesuai instruksi Anda
+        const metrics = [
+            { id: 'spd', label: 'SPD', target: 24516000 },
+            { id: 'std', label: 'STD', target: 423 },
+            { id: 'apc', label: 'APC', target: 57835 },
+            { id: 'psm', label: 'PSM', target: 124 },
+            { id: 'pwp', label: 'PWP', target: 33 },
+            { id: 'serbagratis', label: 'Serba Gratis', target: 17 },
+            { id: 'sueger', label: 'Sueger', target: 30 },
+            { id: 'ceban', label: 'Ceban', target: 20 },
+            { id: 'newmember', label: 'New Member', target: 10 },
+            { id: 'stdmember', label: 'STD MEMBER', target: 300 },
+            { id: 'cbsusu', label: 'CASHBACK Susu hebat', target: 10 },
+            { id: 'cb10k', label: 'CASHBACK 10.000', target: 10 },
+            { id: 'beanspot', label: 'Beanspot', target: 1000000 },
+            { id: 'voucher', label: 'Voucher', target: 100000 },
+            { id: 'nps', label: 'NPS', target: 15 }
+        ];
+
+        // Set tanggal hari ini secara otomatis
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tanggal').value = today;
+
+        // Render input fields secara dinamis
+        const tbody = document.getElementById('metric-fields');
+        metrics.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-gray-100 hover:bg-gray-50";
+            tr.innerHTML = `
+                <td class="p-2 font-medium text-gray-700">${m.label}</td>
+                <td class="p-1"><input type="number" id="t_${m.id}" value="${m.target}" oninput="generateReport()" class="w-full p-1.5 border rounded text-right font-semibold bg-gray-50 text-gray-600 focus:outline-none"></td>
+                <td class="p-1"><input type="number" id="a_${m.id}" oninput="generateReport()" class="w-full p-1.5 border rounded text-right focus:border-blue-500 focus:outline-none bg-white" placeholder="0"></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Format angka ribuan dengan titik (.)
+        function formatNumber(numStr) {
+            if (!numStr || isNaN(numStr)) return "0";
+            return Number(numStr).toLocaleString('id-ID');
+        }
+
+        // Fungsi utama membuat teks laporan otomatis
+        function generateReport() {
+            const rawTanggal = document.getElementById('tanggal').value;
+            let formattedDate = "";
+            if(rawTanggal) {
+                const d = new Date(rawTanggal);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                formattedDate = `${day}/${month}/${year}`;
+            }
+
+            const shift = document.getElementById('shift').value.toUpperCase();
+            const staf = document.getElementById('staf').value.toUpperCase();
+            const crew = document.getElementById('crew').value.toUpperCase();
+
+            let txt = `🟦 FOKUS MKT & SALES*\n`;
+            txt += `🔹TANGGAL : ${formattedDate}\n`;
+            txt += `SIFT : ${shift}\n`;
+            txt += `STAF : ${staf}\n`;
+            txt += `CREW : ${crew}\n\n`;
+            txt += `*Desc : Target/Actual/Acv*\n`;
+
+            metrics.forEach(m => {
+                const targetRaw = document.getElementById(`t_${m.id}`).value;
+                const actualRaw = document.getElementById(`a_${m.id}`).value;
+
+                const target = formatNumber(targetRaw);
+                const actual = formatNumber(actualRaw);
+                let acv = "0%";
+
+                if (targetRaw && actualRaw) {
+                    const tNum = parseFloat(targetRaw);
+                    const aNum = parseFloat(actualRaw);
+                    if (tNum > 0) {
+                        acv = Math.round((aNum / tNum) * 100) + "%";
+                    } else {
+                        acv = "0%";
+                    }
+                } else if (targetRaw && !actualRaw) {
+                    acv = "0%";
+                }
+
+                // Penyesuaian nama label khusus kapitalisasi di format WA Anda
+                let displayLabel = m.label;
+                if(m.id === 'serbagratis') displayLabel = "Serba Gratis";
+                if(m.id === 'sueger') displayLabel = "Sueger";
+                if(m.id === 'cb10k') displayLabel = "CASHBACK 10.000";
+
+                txt += `- ${displayLabel} :${target}/ ${actual}/ ${acv}\n`;
+            });
+
+            document.getElementById('output-text').value = txt;
+        }
+
+        // Fungsi copy clipboard otomatis
+        function copyToClipboard() {
+            const textarea = document.getElementById('output-text');
+            if(!textarea.value) return alert('Isi data terlebih dahulu!');
+            
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(textarea.value);
+
+            const btn = document.getElementById('btn-copy');
+            btn.innerHTML = "✅ Tersalin!";
+            btn.classList.replace('bg-green-600', 'bg-emerald-700');
+            
+            setTimeout(() => {
+                btn.innerHTML = "📋 Salin Teks";
+                btn.classList.replace('bg-emerald-700', 'bg-green-600');
+            }, 2000);
+        }
+
+        // Fungsi hanya mengosongkan kolom actual saja (Kolom target tetap)
+        function resetActualOnly() {
+            if(confirm("Apakah Anda yakin ingin mengosongkan semua data inputan Actual?")) {
+                metrics.forEach(m => {
+                    document.getElementById(`a_${m.id}`).value = "";
+                });
+                document.getElementById('shift').value = "";
+                document.getElementById('staf').value = "";
+                document.getElementById('crew').value = "";
+                generateReport();
+            }
+        }
+
+        // Jalankan pelacakan awal
+        document.getElementById('shift').addEventListener('input', generateReport);
+        document.getElementById('staf').addEventListener('input', generateReport);
+        document.getElementById('crew').addEventListener('input', generateReport);
+        generateReport();
+    </script>
+</body>
+</html>
