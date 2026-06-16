@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generator Laporan Marketing & Sales</title>
-    <!-- Tailwind CSS untuk Desain Modern & Responsif -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -13,16 +12,13 @@
 <body class="bg-gray-100 min-h-screen py-8 px-4">
 
     <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        <!-- Header -->
         <div class="bg-blue-600 p-6 text-white text-center">
             <h1 class="text-2xl font-bold uppercase tracking-wide">📊 Input Laporan Marketing & Sales</h1>
-            <p class="text-blue-100 text-sm mt-1">Target Terisi Otomatis • Actual APC Otomatis (SPD / STD)</p>
+            <p class="text-blue-100 text-sm mt-1">Target Dikunci (Readonly) • Actual APC Otomatis (SPD / STD)</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-            <!-- Form Input (Kiri) -->
             <div class="space-y-6">
-                <!-- Data Hubungan/Meta -->
                 <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 grid grid-cols-2 gap-3">
                     <div class="col-span-2">
                         <label class="block text-xs font-semibold text-gray-600 uppercase">Tanggal</label>
@@ -42,7 +38,6 @@
                     </div>
                 </div>
 
-                <!-- Tabel Input Data -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -53,13 +48,11 @@
                             </tr>
                         </thead>
                         <tbody id="metric-fields" class="text-sm divider-y divider-gray-100">
-                            <!-- Diisi oleh JavaScript -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Output Hasil & Preview (Kanan) -->
             <div class="flex flex-col h-full justify-between bg-gray-50 p-5 rounded-xl border border-gray-200">
                 <div>
                     <h3 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
@@ -81,7 +74,7 @@
     </div>
 
     <script>
-        // Struktur data dengan default value sesuai instruksi Anda
+        // Struktur data dengan default value target tetap Anda
         const metrics = [
             { id: 'spd', label: 'SPD', target: 24516000 },
             { id: 'std', label: 'STD', target: 423 },
@@ -111,16 +104,17 @@
             tr.className = "border-b border-gray-100 hover:bg-gray-50";
             
             if (m.isFormula) {
-                // Untuk APC menggunakan input text readonly agar tidak bisa diubah manual
+                // Tampilan Kolom Target (Readonly) & Kolom Actual APC (Readonly + Otomatis)
                 tr.innerHTML = `
                     <td class="p-2 font-medium text-gray-700">${m.label}</td>
-                    <td class="p-1"><input type="number" id="t_${m.id}" value="${m.target}" oninput="generateReport()" class="w-full p-1.5 border rounded text-right font-semibold bg-gray-50 text-gray-600 focus:outline-none"></td>
+                    <td class="p-1"><input type="number" id="t_${m.id}" value="${m.target}" readonly class="w-full p-1.5 border rounded text-right font-semibold bg-gray-100 text-gray-400 select-none cursor-not-allowed focus:outline-none"></td>
                     <td class="p-1"><input type="text" id="a_${m.id}" readonly class="w-full p-1.5 border rounded text-right bg-gray-100 text-gray-500 font-bold focus:outline-none" placeholder="Otomatis"></td>
                 `;
             } else {
+                // Tampilan Kolom Target (Readonly) & Kolom Actual Biasa (Bisa Diisi)
                 tr.innerHTML = `
                     <td class="p-2 font-medium text-gray-700">${m.label}</td>
-                    <td class="p-1"><input type="number" id="t_${m.id}" value="${m.target}" oninput="generateReport()" class="w-full p-1.5 border rounded text-right font-semibold bg-gray-50 text-gray-600 focus:outline-none"></td>
+                    <td class="p-1"><input type="number" id="t_${m.id}" value="${m.target}" readonly class="w-full p-1.5 border rounded text-right font-semibold bg-gray-100 text-gray-400 select-none cursor-not-allowed focus:outline-none"></td>
                     <td class="p-1"><input type="number" id="a_${m.id}" oninput="generateReport()" class="w-full p-1.5 border rounded text-right focus:border-blue-500 focus:outline-none bg-white" placeholder="0"></td>
                 `;
             }
@@ -135,7 +129,6 @@
 
         // Fungsi utama membuat teks laporan otomatis
         function generateReport() {
-            // AMBIL NILAI LANGSUNG DARI INPUT SPD DAN STD
             const actualSpdRaw = document.getElementById('a_spd').value;
             const actualStdRaw = document.getElementById('a_std').value;
             const apcInput = document.getElementById('a_apc');
@@ -143,7 +136,7 @@
             let hitungApc = 0;
             if (actualSpdRaw && actualStdRaw && parseFloat(actualStdRaw) > 0) {
                 hitungApc = Math.round(parseFloat(actualSpdRaw) / parseFloat(actualStdRaw));
-                apcInput.value = hitungApc; // Update angka di layar input box APC
+                apcInput.value = hitungApc;
             } else {
                 apcInput.value = "";
             }
@@ -172,7 +165,6 @@
 
             metrics.forEach(m => {
                 const targetRaw = document.getElementById(`t_${m.id}`).value;
-                // Ambil data actual khusus: jika APC ambil dari variabel hitungApc, sisanya dari input box
                 let actualRaw = document.getElementById(`a_${m.id}`).value;
                 if (m.id === 'apc' && hitungApc > 0) {
                     actualRaw = hitungApc;
@@ -224,11 +216,13 @@
             }, 2000);
         }
 
-        // Fungsi hanya mengosongkan kolom actual saja (Kolom target tetap)
+        // Fungsi hanya mengosongkan kolom actual saja (Kolom target tetap terkunci)
         function resetActualOnly() {
             if(confirm("Apakah Anda yakin ingin mengosongkan semua data inputan Actual?")) {
                 metrics.forEach(m => {
-                    document.getElementById(`a_${m.id}`).value = "";
+                    if (!m.isFormula) {
+                        document.getElementById(`a_${m.id}`).value = "";
+                    }
                 });
                 document.getElementById('shift').value = "";
                 document.getElementById('staf').value = "";
