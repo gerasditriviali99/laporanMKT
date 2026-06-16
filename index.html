@@ -201,4 +201,32 @@
 
             const btn = document.getElementById('btn-copy');
             btn.innerHTML = "✅ Tersalin!";
-            btn.classList.replace('
+            btn.classList.replace('bg-green-600', 'bg-emerald-700');
+            
+            setTimeout(() => {
+                btn.innerHTML = "📋 Salin Teks";
+                btn.classList.replace('bg-emerald-700', 'bg-green-600');
+            }, 2000);
+        }
+
+        // Fungsi hanya mengosongkan kolom actual saja (Kolom target tetap)
+        function resetActualOnly() {
+            if(confirm("Apakah Anda yakin ingin mengosongkan semua data inputan Actual?")) {
+                metrics.forEach(m => {
+                    document.getElementById(`a_${m.id}`).value = "";
+                });
+                document.getElementById('shift').value = "";
+                document.getElementById('staf').value = "";
+                document.getElementById('crew').value = "";
+                generateReport();
+            }
+        }
+
+        // Jalankan pelacakan awal
+        document.getElementById('shift').addEventListener('input', generateReport);
+        document.getElementById('staf').addEventListener('input', generateReport);
+        document.getElementById('crew').addEventListener('input', generateReport);
+        generateReport();
+    </script>
+</body>
+</html>
