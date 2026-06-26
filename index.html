@@ -92,9 +92,11 @@
             { id: 'nps', label: 'NPS', target: 15 }
         ];
 
+        // Set tanggal
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('tanggal').value = today;
 
+        // Render fields
         const tbody = document.getElementById('metric-fields');
         metrics.forEach(m => {
             const tr = document.createElement('tr');
@@ -122,38 +124,28 @@
         }
 
         function generateReport() {
-            const actualSpdRaw = document.getElementById('a_spd').value;
-            const actualStdRaw = document.getElementById('a_std').value;
-            const apcInput = document.getElementById('a_apc');
+            // 1. Logika Sinkronisasi STD ke Target NPS (Ditaruh paling atas)
+            const actualStdValue = document.getElementById('a_std').value;
+            const targetNpsInput = document.getElementById('t_nps');
+            
+            if (actualStdValue && actualStdValue > 0) {
+                targetNpsInput.value = actualStdValue;
+            } else {
+                targetNpsInput.value = 15; // Reset ke target awal jika kosong
+            }
 
-            // Hitung APC
-            if (actualSpdRaw && actualStdRaw && parseFloat(actualStdRaw) > 0) {
-                const hitungApc = Math.round(parseFloat(actualSpdRaw) / parseFloat(actualStdRaw));
-                apcInput.value = hitungApc;
+            // 2. Hitung APC Otomatis
+            const actualSpdRaw = document.getElementById('a_spd').value;
+            const apcInput = document.getElementById('a_apc');
+            if (actualSpdRaw && actualStdValue && parseFloat(actualStdValue) > 0) {
+                apcInput.value = Math.round(parseFloat(actualSpdRaw) / parseFloat(actualStdValue));
             } else {
                 apcInput.value = "";
             }
 
-            // --- PERUBAHAN DI SINI ---
-            // Update Target NPS otomatis dari Actual STD
-            const targetNpsInput = document.getElementById('t_nps');
-            if (actualStdRaw) {
-                targetNpsInput.value = actualStdRaw;
-            } else {
-                targetNpsInput.value = 0; // Reset ke target awal jika STD kosong
-            }
-
-            // Proses pembuatan teks WA
+            // 3. Proses Text Output
             const rawTanggal = document.getElementById('tanggal').value;
-            // ... (lanjutkan sisa kode generateReport Anda yang lama)
-            let formattedDate = "";
-            if(rawTanggal) {
-                const d = new Date(rawTanggal);
-                const day = String(d.getDate()).padStart(2, '0');
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const year = d.getFullYear();
-                formattedDate = `${day}/${month}/${year}`;
-            }
+            let formattedDate = rawTanggal ? new Date(rawTanggal).toLocaleDateString('id-ID') : "";
 
             const shift = document.getElementById('shift').value.toUpperCase();
             const staf = document.getElementById('staf').value.toUpperCase();
@@ -170,7 +162,7 @@
                 const targetRaw = document.getElementById(`t_${m.id}`).value;
                 let actualRaw = document.getElementById(`a_${m.id}`).value;
                 
-                // Tambahan logik untuk APC di loop teks
+                // Jika APC, ambil hasil hitungan di atas
                 if (m.id === 'apc' && apcInput.value) {
                     actualRaw = apcInput.value;
                 }
@@ -198,8 +190,35 @@
             document.getElementById('output-text').value = txt;
         }
 
-        // ... (sisa fungsi lainnya tetap sama)
+        // Fungsi lainnya tetap sama
+        function copyToClipboard() {
+            const textarea = document.getElementById('output-text');
+            if(!textarea.value) return alert('Isi data terlebih dahulu!');
+            textarea.select();
+            document.execCommand('copy');
+            const btn = document.getElementById('btn-copy');
+            btn.innerHTML = "✅ Tersalin!";
+            setTimeout(() => btn.innerHTML = "📋 Salin Teks", 2000);
+        }
+
+        function resetActualOnly() {
+            if(confirm("Apakah Anda yakin ingin mengosongkan semua data inputan Actual?")) {
+                metrics.forEach(m => {
+                    if (!m.isFormula) document.getElementById(`a_${m.id}`).value = "";
+                });
+                document.getElementById('shift').value = "";
+                document.getElementById('staf').value = "";
+                document.getElementById('crew').value = "";
+                generateReport();
+            }
+        }
+
+        document.getElementById('shift').addEventListener('input', generateReport);
+        document.getElementById('staf').addEventListener('input', generateReport);
+        document.getElementById('crew').addEventListener('input', generateReport);
+        generateReport();
     </script>
+
 
 </body>
 </html>
